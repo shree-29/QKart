@@ -172,7 +172,7 @@ const Register = () => {
               }));
             }}
           />
-          {loading ? <CircularProgress/> : 
+          {loading ? <CircularProgress style={{margin: '10px auto'}}/> : 
           <Button className="button" type="submit" variant="contained" onClick={()=>register(data)}>
           Register
          </Button>
