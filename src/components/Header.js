@@ -15,9 +15,11 @@ const Header = ({ children, hasHiddenAuthButtons }) => {
             <img src="logo_light.svg" alt="QKart-icon"></img>
         </Box>
 
-        {console.log(hasHiddenAuthButtons)}
+        {/* {console.log(hasHiddenAuthButtons)} */}
+        {children}
 
         { username ? (
+          
           <Box display="flex" alignItems="center">
               <img src="avatar.png" alt={username}/>
            

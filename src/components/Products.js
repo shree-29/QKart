@@ -1,5 +1,6 @@
 import { Search, SentimentDissatisfied } from "@mui/icons-material";
 import { Button } from "@mui/material";
+import { debounce } from "@mui/material";
 import {
   CircularProgress,
   Grid,
@@ -13,6 +14,7 @@ import React, { useEffect, useState } from "react";
 import { config } from "../App";
 import Footer from "./Footer";
 import Header from "./Header";
+import ProductCard from "./ProductCard";
 import "./Products.css";
 
 // Definition of Data Structures used
@@ -67,7 +69,30 @@ const Products = () => {
    *      "message": "Something went wrong. Check the backend console for more details"
    * }
    */
-  const performAPICall = async () => {
+
+
+   const [loading,setLoad] =useState(false);
+   const [debounceTimeout, setDebounceTimeout] = useState(0);
+    const [data,setData] =useState([])
+
+   useEffect(()=>{
+      performAPICall()
+   },[])
+
+  const performAPICall = () => {
+    setLoad(true);
+      axios.get(`${config.endpoint}/products`)
+      .then(res=>{
+        console.log("Products Received")
+        console.log(res.data);
+        setData(res.data)
+        setLoad(false)
+        
+      })
+      .catch(err=>{
+        console.log(err)
+          setLoad(false)
+      })
   };
 
   // TODO: CRIO_TASK_MODULE_PRODUCTS - Implement search logic
@@ -84,7 +109,18 @@ const Products = () => {
    * API endpoint - "GET /products/search?value=<search-query>"
    *
    */
-  const performSearch = async (text) => {
+  const performSearch = (text) => {
+    
+    axios.get(`${config.endpoint}/products/search?value=${text}`)
+    .then(res=>{
+      console.log(res.data)
+      setData(res.data)
+    })
+    .catch(err=>{
+      setData([])
+      console.log("Error");
+    })
+
   };
 
   // TODO: CRIO_TASK_MODULE_PRODUCTS - Optimise API calls with debounce search implementation
@@ -99,7 +135,10 @@ const Products = () => {
    *    Timer id set for the previous debounce call
    *
    */
-  const debounceSearch = (event, debounceTimeout) => {
+  const debounceSearch = (event,debounceTimeout) => {
+    clearTimeout(debounceTimeout);
+    const newTimeout = setTimeout(() => performSearch(event.target.value), 500);
+    setDebounceTimeout(newTimeout);
   };
 
 
@@ -112,9 +151,25 @@ const Products = () => {
     <div>
       <Header>
         {/* TODO: CRIO_TASK_MODULE_PRODUCTS - Display search bar in the header for Products page */}
-
+        
+        <TextField
+        className="search-desktop"
+        InputProps={{
+          endAdornment: (
+            <InputAdornment position="end">
+              <Search color="primary" />
+            </InputAdornment>
+          ),
+        }}
+        placeholder="Search for items/categories"
+        name="search"
+        onChange={(e)=>
+          debounceSearch(e,debounceTimeout)
+        }
+      />
+      
       </Header>
-
+      
       {/* Search view for mobiles */}
       <TextField
         className="search-mobile"
@@ -129,17 +184,46 @@ const Products = () => {
         }}
         placeholder="Search for items/categories"
         name="search"
+        onChange={(e)=>
+          debounceSearch(e,debounceTimeout)
+        }
       />
-       <Grid container>
-         <Grid item className="product-grid">
+       <Grid container spacing={3} >
+         <Grid item  className="product-grid">
            <Box className="hero">
              <p className="hero-heading">
                India’s <span className="hero-highlight">FASTEST DELIVERY</span>{" "}
                to your door step
              </p>
            </Box>
+          
          </Grid>
+         
+         
        </Grid>
+       <Grid container spacing={2}>
+       { loading ? (
+              <Box className="loading">
+              <CircularProgress/>
+              <p>Loading Products</p>
+              </Box>
+            ) : ( 
+              data.length!==0 ?
+              (data.map((element)=>
+                <Grid item xs={6} md={3}>
+                <ProductCard element={element}/>
+                </Grid>)) 
+              :
+              (
+                <Box className="loading">
+                <SentimentDissatisfied />
+                <p>No products found</p>
+                </Box>
+              )
+              )
+       }
+       </Grid>
+       
       <Footer />
     </div>
   );
