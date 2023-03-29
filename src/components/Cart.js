@@ -47,7 +47,28 @@ import "./Cart.css";
  *    Array of objects with complete data on products in cart
  *
  */
+
+
+
 export const generateCartItemsFrom = (cartData, productsData) => {
+    //console.log("in generate cart",cartData,"---------",productsData)
+    let cItems=[];
+     cartData.forEach(element=>{
+      productsData.forEach(e=>{
+        if(element.productId===e._id)
+         cItems.push( {
+          name: e.name,
+          qty:element.qty,
+          category:e.category,
+          cost:e.cost,
+          rating:e.rating,
+          image:e.image,
+          productId:element.productId
+         });
+      });
+      // console.log(cItems)
+    })
+    return cItems;
 };
 
 /**
@@ -61,6 +82,11 @@ export const generateCartItemsFrom = (cartData, productsData) => {
  *
  */
 export const getTotalCartValue = (items = []) => {
+    let totalSum=0;
+    items.forEach(e=>{
+      totalSum+=e.qty*e.cost;
+    })
+    return totalSum;
 };
 
 
@@ -85,13 +111,13 @@ const ItemQuantity = ({
 }) => {
   return (
     <Stack direction="row" alignItems="center">
-      <IconButton size="small" color="primary" onClick={handleDelete}>
+      <IconButton size="small" color="primary" onClick={()=>handleDelete()}>
         <RemoveOutlined />
       </IconButton>
       <Box padding="0.5rem" data-testid="item-qty">
         {value}
       </Box>
-      <IconButton size="small" color="primary" onClick={handleAdd}>
+      <IconButton size="small" color="primary" onClick={()=>handleAdd()}>
         <AddOutlined />
       </IconButton>
     </Stack>
@@ -114,9 +140,10 @@ const ItemQuantity = ({
  */
 const Cart = ({
   products,
-  items = [],
+  items=[],
   handleQuantity,
 }) => {
+  const history=useHistory()
 
   if (!items.length) {
     return (
@@ -133,6 +160,51 @@ const Cart = ({
     <>
       <Box className="cart">
         {/* TODO: CRIO_TASK_MODULE_CART - Display view for each cart item with non-zero quantity */}
+
+        {
+        items.map((element)=>(
+          <Box display="flex" alignItems="flex-start" padding="1rem">
+    <Box className="image-container">
+        <img
+            // Add product image
+            src={element.image}
+            // Add product name as alt eext
+            alt={element.name}
+            width="100%"
+            height="100%"
+        />
+    </Box>
+    <Box
+        display="flex"
+        flexDirection="column"
+        justifyContent="space-between"
+        height="6rem"
+        paddingX="1rem"
+    >
+        <div>{/* Add product name */ element.name}</div>
+        <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+        >
+        <ItemQuantity
+        // Add required props by checking implementation
+        value={element.qty}
+        handleAdd={()=>{
+          handleQuantity(localStorage.getItem("token"),items,products,element.productId,element.qty+1)
+        }}
+        handleDelete={()=>{
+          handleQuantity(localStorage.getItem("token"),items,products,element.productId,element.qty-1)
+
+        }}
+        />
+        <Box padding="0.5rem" fontWeight="700">${element.cost}</Box>
+        </Box>
+    </Box>
+</Box>
+        ))
+        }
+
         <Box
           padding="1rem"
           display="flex"
@@ -148,9 +220,7 @@ const Cart = ({
             fontSize="1.5rem"
             alignSelf="center"
             data-testid="cart-total"
-          >
-            ${getTotalCartValue(items)}
-          </Box>
+          >${getTotalCartValue(items)}</Box>
         </Box>
 
         <Box display="flex" justifyContent="flex-end" className="cart-footer">
@@ -159,6 +229,7 @@ const Cart = ({
             variant="contained"
             startIcon={<ShoppingCart />}
             className="checkout-btn"
+            onClick={()=>{history.push('/checkout')}}
           >
             Checkout
           </Button>

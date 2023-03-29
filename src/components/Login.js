@@ -115,6 +115,7 @@ const Login = () => {
    * -    `balance` field in localStorage can be used to store the balance amount in the user's wallet
    */
   const persistLogin = (token, username, balance) => {
+    console.log(token)
     localStorage.setItem("token",token);
     localStorage.setItem("username",username);
     localStorage.setItem("balance",balance);
