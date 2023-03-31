@@ -104,6 +104,11 @@ export const getTotalCartValue = (items = []) => {
  *
  */
 export const getTotalItems = (items = []) => {
+  let sum=0;
+  items.forEach(e=>{
+    sum+=e.qty
+  })
+  return sum
 };
 
 // TODO: CRIO_TASK_MODULE_CHECKOUT - Add static quantity view for Checkout page cart
@@ -127,8 +132,11 @@ const ItemQuantity = ({
   value,
   handleAdd,
   handleDelete,
+  isReadOnly
 }) => {
   return (
+
+    !isReadOnly ? (
     <Stack direction="row" alignItems="center">
       <IconButton size="small" color="primary" onClick={()=>handleDelete()}>
         <RemoveOutlined />
@@ -140,6 +148,18 @@ const ItemQuantity = ({
         <AddOutlined />
       </IconButton>
     </Stack>
+    )
+    :
+    (
+      <Stack direction="row" alignItems="center">
+      Qty:
+      <Box padding="0.5rem" data-testid="item-qty">
+        {value}
+      </Box>
+      
+    </Stack>
+    )
+
   );
 };
 
@@ -163,6 +183,7 @@ const Cart = ({
   products,
   items=[],
   handleQuantity,
+  isReadOnly
 }) => {
   const history=useHistory()
 
@@ -218,6 +239,7 @@ const Cart = ({
           handleQuantity(localStorage.getItem("token"),items,products,element.productId,element.qty-1)
 
         }}
+        isReadOnly={isReadOnly}
         />
         <Box padding="0.5rem" fontWeight="700">${element.cost}</Box>
         </Box>
@@ -244,7 +266,11 @@ const Cart = ({
           >${getTotalCartValue(items)}</Box>
         </Box>
 
-        <Box display="flex" justifyContent="flex-end" className="cart-footer">
+        {isReadOnly ? (
+          <></>        
+
+        ) : (
+          <Box display="flex" justifyContent="flex-end" className="cart-footer">
           <Button
             color="primary"
             variant="contained"
@@ -255,6 +281,10 @@ const Cart = ({
             Checkout
           </Button>
         </Box>
+
+        )
+  }
+        
       </Box>
     </>
   );

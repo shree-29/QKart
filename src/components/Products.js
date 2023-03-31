@@ -100,7 +100,7 @@ const Products = () => {
       axios.get(`${config.endpoint}/products`)
       .then(async(res)=>{
         // console.log("Products Received")
-        console.log(res.data);
+        //console.log(res.data);
         setData(res.data);
         let fc = await fetchCart(token);
         // console.log("generate",generateCartItemsFrom(fc,res.data))
